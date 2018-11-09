@@ -11,46 +11,46 @@
 template <class T>
 class Node {
 private:
-    T value;
-    Node *parent = nullptr;
-    Node *left = nullptr;
-    Node *right = nullptr;
+    T mValue;
+    Node *mParent = nullptr;
+    Node *mLeft = nullptr;
+    Node *mRight = nullptr;
 
     Node **getChild(const T &other) {
-        return other < value ? &left : &right;
+        return other < mValue ? &mLeft : &mRight;
     }
 
     Node **getChildOfParent() {
-        if (parent == nullptr) {
+        if (mParent == nullptr) {
             return nullptr;
         }
-        return parent->left == this? &(parent->left) : &(parent->right);
+        return mParent->mLeft == this? &(mParent->mLeft) : &(mParent->mRight);
     }
 
 public:
     Node() = delete;
 
-    Node(const T& val) : value(val) {}
+    Node(const T& val) : mValue(val) {}
 
-    Node(const T& val, Node* parentNode): value(val), parent(parentNode) {}
+    Node(const T& val, Node* parentNode): mValue(val), mParent(parentNode) {}
 
     Node* getMin() {
         Node* node = this;
         while(true) {
-            if(nullptr == node->left) {
+            if(nullptr == node->mLeft) {
                 return node;
             }
-            node = node->left;
+            node = node->mLeft;
         }
     }
 
     Node* getMax() {
         auto node = this;
         while(true) {
-            if(nullptr == node->right) {
+            if(nullptr == node->mRight) {
                 return node;
             }
-            node = node->right;
+            node = node->mRight;
         }
     }
 
@@ -58,19 +58,19 @@ public:
         Node* node = this;
 
         while (true) {
-            if (element == node->value) {
+            if (element == node->mValue) {
                 return node;
             }
-            if (element < node->value) {
-                if (nullptr == node->left ) {
+            if (element < node->mValue) {
+                if (nullptr == node->mLeft ) {
                     return nullptr;
                 }
-                node = node->left;
+                node = node->mLeft;
             } else {
-                if (nullptr == node->right) {
+                if (nullptr == node->mRight) {
                     return nullptr;
                 }
-                node = node->right;
+                node = node->mRight;
             }
         }
     }
@@ -92,28 +92,28 @@ public:
             return false;
         }
 
-        if (nullptr == el->right &&
-            nullptr == el->left ) {
+        if (nullptr == el->mRight &&
+            nullptr == el->mLeft ) {
             auto childOfParent = el->getChildOfParent();
             *childOfParent = nullptr;
             delete (el);
         }
-        else if (nullptr == el->right ) {
+        else if (nullptr == el->mRight ) {
             auto childOfParent = el->getChildOfParent();
-            *childOfParent = el->left;
-            el->left->parent = el->parent;
+            *childOfParent = el->mLeft;
+            el->mLeft->mParent = el->mParent;
             delete (el);
         }
-        else if (nullptr == el->left ) {
+        else if (nullptr == el->mLeft ) {
             auto childOfParent = el->getChildOfParent();
-            *childOfParent = el->right;
-            el->right->parent = el->parent;
+            *childOfParent = el->mRight;
+            el->mRight->mParent = el->mParent;
             delete (el);
         }
         else {
-            Node* minNodeInRightSubtree = el->right->getMin();
-            el->value = minNodeInRightSubtree->value;
-            el->right->remove(minNodeInRightSubtree->value);
+            Node* minNodeInRightSubtree = el->mRight->getMin();
+            el->mValue = minNodeInRightSubtree->mValue;
+            el->mRight->remove(minNodeInRightSubtree->mValue);
         }
     }
 
@@ -141,20 +141,20 @@ public:
         switch (order) {
             case Order::PRE: {
                 visit(node);
-                dfs(visit, node->left, order);
-                dfs(visit, node->right, order);
+                dfs(visit, node->mLeft, order);
+                dfs(visit, node->mRight, order);
                 return;
             }
             case Order::POST: {
-                dfs(visit, node->left, order);
-                dfs(visit, node->right, order);
+                dfs(visit, node->mLeft, order);
+                dfs(visit, node->mRight, order);
                 visit(node);
                 return;
             }
             case Order::IN: {
-                dfs(visit, node->left, order);
+                dfs(visit, node->mLeft, order);
                 visit(node);
-                dfs(visit, node->right, order);
+                dfs(visit, node->mRight, order);
                 return;
             }
             default: {
@@ -165,10 +165,10 @@ public:
 
     friend std::ostream& operator << (std::ostream& out, const Node& node) {
         out << &node << " "
-            << node.value << " "
-            << node.parent << " "
-            << node.left << " "
-            << node.right << std::endl;
+            << node.mValue << " "
+            << node.mParent << " "
+            << node.mLeft << " "
+            << node.mRight << std::endl;
         return out;
     }
 };

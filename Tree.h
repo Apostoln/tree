@@ -13,7 +13,7 @@
 
 template <class T, class Node = Node<T>>
 class Tree {
-    Node *root = nullptr;
+    Node *mRoot = nullptr;
 
 public:
     Tree() = default;
@@ -25,54 +25,54 @@ public:
     ~Tree() = default;
 
     void add(const T &value) {
-        if (nullptr == root) {
-            root = new Node{value};
+        if (nullptr == mRoot) {
+            mRoot = new Node{value};
             return;
         }
-        root->add(value);
+        mRoot->add(value);
     }
 
     T getMax() {
-        return root->getMax()->value;
+        return mRoot->getMax()->value;
     }
 
     T getMin() {
-        return root->getMin()->value;
+        return mRoot->getMin()->value;
     }
 
     T* find(const T& element) {
-        if (nullptr == root) {
+        if (nullptr == mRoot) {
             return nullptr;
         }
-        return &(root->find(element)->value);
+        return &(mRoot->find(element)->value);
     }
 
     bool remove(const T& el) {
-        return root->remove(el);
+        return mRoot->remove(el);
     }
 
     template <class F>
     void bfs(F visit) {
-        if (nullptr == root) {
+        if (nullptr == mRoot) {
             return;
         }
-        root->bfs(visit);
+        mRoot->bfs(visit);
     }
 
     template <class F>
     void dfs(F visit, Order order = Order::PRE) {
-        if (nullptr == root) {
+        if (nullptr == mRoot) {
             return;
         }
-        root->dfs(visit, order);
+        mRoot->dfs(visit, order);
     }
 
     bool isEmpty() {
-        return nullptr == root;
+        return nullptr == mRoot;
     }
 
     Node* getRoot() {
-        return root;
+        return mRoot;
     }
 };
 
