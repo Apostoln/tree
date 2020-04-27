@@ -5,26 +5,43 @@
 #include <memory>
 #include <cassert>
 #include <queue>
+#include <experimental/memory>
 
 #include "Order.h"
 
 template <class T>
-class Node {
-private:
-    T mValue;
-    Node *mParent = nullptr;
-    Node *mLeft = nullptr;
-    Node *mRight = nullptr;
+class Node : public INode<T> {
+protected:
+    using typename INode<T>::UniqNode;
+    using typename INode<T>::ObserveNode;
 
-    Node **getChild(const T &other) {
-        return other < mValue ? &mLeft : &mRight;
+protected:
+    T mValue;
+    ObserveNode mParent = nullptr;
+    UniqNode mLeft = nullptr;
+    UniqNode mRight = nullptr;
+
+    UniqNode& getChild(const T &other) {
+        return other < mValue ? mLeft : mRight;
     }
 
-    Node **getChildOfParent() {
-        if (mParent == nullptr) {
-            return nullptr;
+    UniqNode& getNullChild() {
+        static UniqNode nullUniqNode;
+        if (nullptr == mLeft ) {
+            return mLeft;
         }
-        return mParent->mLeft == this? &(mParent->mLeft) : &(mParent->mRight);
+        if (nullptr == mRight) {
+            return mRight;
+        }
+        return nullUniqNode;
+    }
+
+    UniqNode& getChildOfParent() {
+        static UniqNode nullUniqNode;
+        if (nullptr == mParent) {
+            return nullUniqNode;
+        }
+        return mParent->mLeft.get() == this? mParent->mLeft : mParent->mRight;
     }
 
 public:
@@ -40,12 +57,12 @@ public:
             if(nullptr == node->mLeft) {
                 return node;
             }
-            node = node->mLeft;
+            node = node->mLeft.get();
         }
     }
 
     Node* getMax() {
-        auto node = this;
+        Node* node = this;
         while(true) {
             if(nullptr == node->mRight) {
                 return node;
@@ -65,50 +82,48 @@ public:
                 if (nullptr == node->mLeft ) {
                     return nullptr;
                 }
-                node = node->mLeft;
+                node = node->mLeft.get();
             } else {
                 if (nullptr == node->mRight) {
                     return nullptr;
                 }
-                node = node->mRight;
+                node = node->mRight.get();
             }
         }
     }
 
-    void add(const T& value) {
+    virtual UniqNode add(const T& value) {
         Node* node = this;
-        if (Node **child = node->getChild(value); nullptr == *child) { // Указатель на указатель на нужного потомка
-            *child = new Node{value, node};
-            return;
+        if (UniqNode& child = node->getChild(value); nullptr == child) { // Указатель на указатель на нужного потомка
+            child.reset(new Node{value, node});
+            return {this};
         } else {
-            (*child)->add(value);
+            child->add(value);
         }
+        return {this};
     }
 
     bool remove(const T& value) {
         Node* node = this;
-        auto el = node->find(value);
+        Node* el = node->find(value);
         if (nullptr == el) {
             return false;
         }
 
         if (nullptr == el->mRight &&
             nullptr == el->mLeft ) {
-            auto childOfParent = el->getChildOfParent();
-            *childOfParent = nullptr;
-            delete (el);
+            UniqNode& childOfParent = el->getChildOfParent();
+            childOfParent.reset();
         }
         else if (nullptr == el->mRight ) {
-            auto childOfParent = el->getChildOfParent();
-            *childOfParent = el->mLeft;
-            el->mLeft->mParent = el->mParent;
-            delete (el);
+            UniqNode& childOfParent = el->getChildOfParent();
+            childOfParent = std::move(el->mLeft);
+            childOfParent->mParent = el->mParent;
         }
         else if (nullptr == el->mLeft ) {
-            auto childOfParent = el->getChildOfParent();
-            *childOfParent = el->mRight;
-            el->mRight->mParent = el->mParent;
-            delete (el);
+            UniqNode& childOfParent = el->getChildOfParent();
+            childOfParent = std::move(el->mRight);
+            childOfParent->mParent = el->mParent;
         }
         else {
             Node* minNodeInRightSubtree = el->mRight->getMin();
@@ -122,14 +137,14 @@ public:
         std::queue<Node*> q;
         q.push(this);
         while (!q.empty()) {
-            auto node = q.front();
+            Node* node = q.front();
             q.pop();
             visit(node);
-            if (nullptr != node->left) {
-                q.push(node->left);
+            if (nullptr != node->mLeft) {
+                q.push(node->mLeft.get());
             }
-            if (nullptr != node->right) {
-                q.push(node->right);
+            if (nullptr != node->mRight) {
+                q.push(node->mRight.get());
             }
         }
     }
@@ -166,9 +181,9 @@ public:
     friend std::ostream& operator << (std::ostream& out, const Node& node) {
         out << &node << " "
             << node.mValue << " "
-            << node.mParent << " "
-            << node.mLeft << " "
-            << node.mRight << std::endl;
+            << node.mParent.get() << " "
+            << node.mLeft.get() << " "
+            << node.mRight.get() << std::endl;
         return out;
     }
 };

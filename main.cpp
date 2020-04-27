@@ -1,14 +1,11 @@
 #include <iostream>
-#include <vector>
-#include <memory>
-#include <cassert>
-#include <queue>
-#include <vector>
-
 #include "Tree.h"
+#include "TreapNode.h"
 
 void test() {
-    BinaryTree<int> t;
+    // TreapNode<int> tt;
+    // BinaryTree<int> t;
+    Tree<int, TreapNode<int>> t;
     t.add(42);
     t.add(33);
     t.add(56);
@@ -18,9 +15,11 @@ void test() {
     t.add(558);
     t.add(559);
     t.add(40);
-    auto print = [&] { t.bfs([](const auto& node) {
-                            std::cout << *node << std::endl;
-                       });
+
+    auto print = [&] {
+        t.bfs([](const auto& node) {
+            std::cout << *node << std::endl;
+        });
     };
 
     print();
@@ -29,7 +28,6 @@ void test() {
     std::cout << std::endl;
 
     print();
-
 }
 
 

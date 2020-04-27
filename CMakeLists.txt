@@ -3,4 +3,4 @@ project(tree)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(tree main.cpp Treap.h Tree.h Order.h BinaryTreeNode.h)
+add_executable(tree main.cpp Tree.h Order.h BinaryTreeNode.h TreapNode.h Node.h)

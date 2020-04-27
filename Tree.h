@@ -7,17 +7,16 @@
 #include <cassert>
 #include <queue>
 
+#include "Node.h"
 #include "Order.h"
 #include "BinaryTreeNode.h"
 
-
-template <class T, class Node = Node<T>>
+template <class T, class Node = Node<T>, class INode = INode<T>>
 class Tree {
-    Node *mRoot = nullptr;
+    std::unique_ptr<INode> mRoot;
 
 public:
     Tree() = default;
-
     Tree(const Tree &) = default;
 
     Tree(Tree &&) = default;
@@ -26,10 +25,10 @@ public:
 
     void add(const T &value) {
         if (nullptr == mRoot) {
-            mRoot = new Node{value};
+            mRoot.reset(new Node{value});
             return;
         }
-        mRoot->add(value);
+        mRoot = std::move(mRoot->add(value));
     }
 
     T getMax() {
